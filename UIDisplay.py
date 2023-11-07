@@ -1,7 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
+import threading
+from time import sleep
+import time
+import random
 
 global giatri
+global thread_running
+thread_running = True
 
 def create_rounded_frame(canvas, x0, y0, x1, y1, radius, color):
     canvas.create_arc(x0, y0, x0 + 2 * radius, y0 + 2 * radius, start=90, extent=90, fill=color, outline=color)
@@ -51,42 +57,48 @@ canvas2.bind("<Configure>", lambda event, canvas=canvas2: resize_rounded_frame(c
 canvas3.bind("<Configure>", lambda event, canvas=canvas3: resize_rounded_frame(canvas, event))
 canvas4.bind("<Configure>", lambda event, canvas=canvas4: resize_rounded_frame(canvas, event))
 global selected_value2
+global thread
+thread = None
+
 def click_command():
-    global giatri
+
     giatri = selected_value2.get()
     stringLabel3.config(text=f"Giá trị {giatri} theo thời gian")
 
+
+
 def create_button():
     global selected_value2
-    #create button in canvas2
+    
     for widget in canvas2.winfo_children():
         widget.destroy()
     stringLabel2 = tk.Label(canvas2, text=f'{o2}', bg="white", anchor="w")
     stringLabel2.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.1)
     global giatri
     giatri = selected_value.get()
-    selected_value2 = tk.StringVar(value="E")
-    if giatri == "A":
-        radiobutton1canvas2 = tk.Radiobutton(canvas2, text="E", variable=selected_value2, value="E", command=click_command, background="white",activebackground="white")
-        radiobutton1canvas2.place(relx=0.1, rely=0.2, relwidth=0.2, relheight=0.1)
-        radiobutton2canvas2 = tk.Radiobutton(canvas2, text="F", variable=selected_value2, value="F", command=click_command, background="white", activebackground="white")
-        radiobutton2canvas2.place(relx=0.1, rely=0.3, relwidth=0.2, relheight=0.1)
-        radiobutton3canvas2 = tk.Radiobutton(canvas2, text="G", variable=selected_value2, value="G", command=click_command, background="white", activebackground="white")
-        radiobutton3canvas2.place(relx=0.1, rely=0.4, relwidth=0.2, relheight=0.1)
-    elif giatri =="B":
-        radiobutton1canvas2 = tk.Radiobutton(canvas2, text="E", variable=selected_value2, value="E", command=click_command, background="white",activebackground="white")
-        radiobutton1canvas2.place(relx=0.1, rely=0.2, relwidth=0.2, relheight=0.1)
-        radiobutton2canvas2 = tk.Radiobutton(canvas2, text="F", variable=selected_value2, value="F", command=click_command, background="white", activebackground="white")
-        radiobutton2canvas2.place(relx=0.1, rely=0.3, relwidth=0.2, relheight=0.1)
-        radiobutton3canvas2 = tk.Radiobutton(canvas2, text="G", variable=selected_value2, value="G", command=click_command, background="white", activebackground="white")
-        radiobutton3canvas2.place(relx=0.1, rely=0.4, relwidth=0.2, relheight=0.1)
-        radiobutton4canvas2 = tk.Radiobutton(canvas2, text="H", variable=selected_value2, value="H", command=click_command, background="white", activebackground="white")
-        radiobutton4canvas2.place(relx=0.1, rely=0.5, relwidth=0.2, relheight=0.1)
-    elif giatri =="C":
-        radiobutton1canvas2 = tk.Radiobutton(canvas2, text="E", variable=selected_value2, value="E", command=click_command, background="white",activebackground="white")
-        radiobutton1canvas2.place(relx=0.1, rely=0.2, relwidth=0.2, relheight=0.1)
-        radiobutton2canvas2 = tk.Radiobutton(canvas2, text="F", variable=selected_value2, value="F", command=click_command, background="white", activebackground="white")
-        radiobutton2canvas2.place(relx=0.1, rely=0.3, relwidth=0.2, relheight=0.1)
+    selected_value2 = tk.StringVar(value="NULL")
+    if giatri == "watermonitoring":
+         child = ["Temperature", "Salinity", "EC", "ORP"]
+         x = 0.15
+         for i in child:
+            radiobutton1canvas2 = tk.Radiobutton(canvas2, text=i, variable=selected_value2, value=i, command=click_command, background="white",activebackground="white",anchor="w")
+            radiobutton1canvas2.place(relx=0.1, rely=x +0.1, relwidth=0.2, relheight=0.1)
+            x = x + 0.1
+    elif giatri =="soilmonitoring":
+         child = ["Temperature", "Humidity", "PH", "EC", "N", "P", "K"]
+         x = 0.15
+         for i in child:
+            radiobutton1canvas2 = tk.Radiobutton(canvas2, text=i, variable=selected_value2, value=i, command=click_command, background="white",activebackground="white",anchor="w")
+            radiobutton1canvas2.place(relx=0.1, rely=x +0.1, relwidth=0.2, relheight=0.1)
+            x = x + 0.1
+    elif giatri =="airmonitoring":
+
+        child = ["Temperature", "Humidity", "Lux", "CO2"]
+        x = 0.15
+        for i in child:
+            radiobutton1canvas2 = tk.Radiobutton(canvas2, text=i, variable=selected_value2, value=i, command=click_command, background="white",activebackground="white",anchor="w")
+            radiobutton1canvas2.place(relx=0.1, rely=x +0.1, relwidth=0.2, relheight=0.1)
+            x = x + 0.1
 
     elif giatri =="D":
         radiobutton1canvas2 = tk.Radiobutton(canvas2, text="E", variable=selected_value2, value="E", command=click_command, background="white",activebackground="white")
@@ -102,37 +114,35 @@ def create_button():
 
 # Create a Treeview widget
 tree = ttk.Treeview(canvas3)
-tree["columns"] = ("Name", "Age")  # Define column names
+tree["columns"] = ("Name", "Age","cot3")  # Define column names
 # Create treeview columns
 tree.column("#0", width=0, stretch=tk.NO)  # Hidden ID column
 tree.column("Name", width=150, minwidth=50, anchor="center")
 tree.column("Age", width=150, minwidth=50, anchor="center")
+tree.column("cot3", width=150, minwidth=50, anchor="center")
 
 # Define column headings
 tree.heading("#0", text="", anchor=tk.W)
 tree.heading("Name", text="Thời Gian", anchor="center")
-tree.heading("Age", text="Dữ Liệu", anchor="center")
+tree.heading("Age", text="Topic", anchor="center")
+tree.heading("cot3", text="Dữ Liệu", anchor="center")
 
-# Insert data into the treeview
-tree.insert("", "end", values=("John Doe", 30))
-tree.insert("", "end", values=("Jane Smith", 25))
 
-# Pack the treeview widget to add it to the window
+def update_records(topic,value):
+    current_time = time.strftime("%H:%M:%S")
+    tree.insert("", "0", values=(current_time, topic,value))
+
 tree.place(relx=0.1, rely=0.21, relwidth=0.8, relheight=0.77)
 
 # Create Radio buttons
 selected_value = tk.StringVar(value="A")
 
-radiobutton1 = tk.Radiobutton(canvas1, text="A", variable=selected_value, value="A", command=create_button, background="white",activebackground="white")
-radiobutton1.place(relx=0.1, rely=0.2, relwidth=0.2, relheight=0.1)
+dataset = ["watermonitoring","soilmonitoring","airmonitoring"]
+xcanvas1 = 0.15
+for i in dataset:
 
-radiobutton2 = tk.Radiobutton(canvas1, text="B", variable=selected_value, value="B", command=create_button, background="white", activebackground="white")
-radiobutton2.place(relx=0.1, rely=0.3, relwidth=0.2, relheight=0.1)
-
-radiobutton3 = tk.Radiobutton(canvas1, text="C", variable=selected_value, value="C", command=create_button, background="white", activebackground="white")
-radiobutton3.place(relx=0.1, rely=0.4, relwidth=0.2, relheight=0.1)
-
-radiobutton4 = tk.Radiobutton(canvas1, text="D", variable=selected_value, value="D", command=create_button, background="white", activebackground="white")
-radiobutton4.place(relx=0.1, rely=0.5, relwidth=0.2, relheight=0.1)
+    radiobutton1 = tk.Radiobutton(canvas1, text=i, variable=selected_value, value=i, command=create_button, background="white",activebackground="white",anchor="w")
+    radiobutton1.place(relx=0.1, rely=xcanvas1+0.1, relwidth=0.2, relheight=0.1)
+    xcanvas1 = xcanvas1 + 0.1
 
 root.mainloop()
